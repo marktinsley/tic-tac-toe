@@ -6,6 +6,9 @@
 
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    @auth
+        <meta name="api-token" content="{{ \Illuminate\Support\Facades\Auth::user()->api_token }}">
+    @endauth
 
     <title>{{ config('app.name', 'Laravel') }}</title>
 

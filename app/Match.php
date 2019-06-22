@@ -2,6 +2,8 @@
 
 namespace App;
 
+use App\Events\MatchEnded;
+use App\Events\MoveRecorded;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -49,9 +51,25 @@ class Match extends Model
      */
     public function tileIsTaken(Tile $tile)
     {
-        return $this->moves()->where('column', $tile->column())
-            ->where('row', $tile->row())
-            ->exists();
+        return $this->moves()->onTile($tile)->exists();
+    }
+
+    /**
+     * Gives you the tiles that are not taken yet.
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function openTiles()
+    {
+        return collect([
+            'A1', 'B1', 'C1',
+            'A2', 'B2', 'C2',
+            'A3', 'B3', 'C3',
+        ])->map(function ($shorthand) {
+            return Tile::fromShorthand($shorthand);
+        })->reject(function (Tile $tile) {
+            return $this->tileIsTaken($tile);
+        });
     }
 
     /**
@@ -65,7 +83,66 @@ class Match extends Model
     {
         $lastMove = $this->moves()->latest()->first();
 
-        return !$lastMove || $lastMove->wasMadeBy($player);
+        return !$lastMove || !$lastMove->wasMadeBy($player);
+    }
+
+    /**
+     * Is this match against the computer?
+     *
+     * @return bool
+     */
+    public function isVsComputer()
+    {
+        return $this->type_key == self::TYPE_VS_COMPUTER;
+    }
+
+    /**
+     * Record a move on the board.
+     *
+     * @param Tile $tile
+     * @param User|null $player
+     *
+     * @return Move
+     */
+    public function recordMove(Tile $tile, User $player)
+    {
+        $move = $this->moves()->create([
+            'player_id' => $player ? $player->id : null,
+            'column' => $tile->column(),
+            'row' => $tile->row(),
+        ]);
+
+        MoveRecorded::dispatch($move);
+
+        if ($this->isVsComputer() && !($player instanceof ComputerPlayer)) {
+            (new ComputerPlayer)->makeMove($this);
+        }
+
+        $this->closeIfDone();
+
+        return $move;
+    }
+
+    /**
+     * Closes the match if it's done.
+     */
+    public function closeIfDone()
+    {
+        if ($this->hasEnded()) {
+            return;
+        }
+
+        $winner = (new MatchReferee($this))->lookForWinner();
+
+        if ($winner) {
+            $this->update(['winner_id' => $winner->id, 'ended_at' => now()]);
+            MatchEnded::dispatch($this);
+        }
+
+        if ($this->openTiles()->isEmpty()) {
+            $this->update(['ended_at' => now()]);
+            MatchEnded::dispatch($this);
+        }
     }
 
     /**
@@ -76,6 +153,16 @@ class Match extends Model
     public function isInProgress()
     {
         return $this->ended_at === null;
+    }
+
+    /**
+     * Is the match done?
+     *
+     * @return bool
+     */
+    public function hasEnded()
+    {
+        return !$this->isInProgress();
     }
 
     /**

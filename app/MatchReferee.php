@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Events\MoveRecorded;
 use App\Rules\IsPlayersTurn;
 use App\Rules\IsTile;
 use App\Rules\MatchInProgress;
@@ -38,12 +39,11 @@ class MatchReferee
     {
         $this->moveValidator($player, $tile)->validate();
 
-        return Move::create([
-            'match_id' => $this->match->id,
-            'player_id' => $player->id,
-            'column' => $tile->column(),
-            'row' => $tile->row(),
-        ]);
+        return $this->match->recordMove($tile, $player);
+    }
+
+    public function lookForWinner()
+    {
     }
 
     /**

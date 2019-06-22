@@ -16,3 +16,10 @@ $factory->define(Match::class, function (Faker $faker) {
         'ended_at' => null
     ];
 });
+
+$factory->state(Match::class, 'vsHuman', [
+    'type_key' => Match::TYPE_VS_HUMAN,
+    'player2_id' => function () {
+        return factory(\App\User::class)->create()->id;
+    }
+]);

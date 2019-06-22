@@ -16,7 +16,7 @@ class MatchInProgress implements Rule
      */
     public function passes($attribute, $value)
     {
-        return Match::find($value)->isInProgress();
+        return Match::findOrFail($value)->isInProgress();
     }
 
     /**

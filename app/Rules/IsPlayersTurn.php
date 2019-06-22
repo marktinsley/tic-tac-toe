@@ -32,7 +32,7 @@ class IsPlayersTurn implements Rule
      */
     public function passes($attribute, $value)
     {
-        return $this->match->isPlayersTurn(User::find($value));
+        return $this->match->isPlayersTurn(User::findOrFail($value));
     }
 
     /**

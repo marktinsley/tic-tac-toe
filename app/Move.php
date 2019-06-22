@@ -2,8 +2,8 @@
 
 namespace App;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Query\Builder;
 
 class Move extends Model
 {
@@ -23,7 +23,7 @@ class Move extends Model
      */
     public function wasMadeBy(User $player)
     {
-        return !$this->wasMadeByComputer() && $player->id === $this->player_id;
+        return !$this->wasMadeByComputer() && $player->id == $this->player_id;
     }
 
     /**
@@ -34,5 +34,35 @@ class Move extends Model
     public function wasMadeByComputer()
     {
         return $this->player_id === null;
+    }
+
+    /**
+     * Orders the moves in the sequence they were made.
+     *
+     * @param Builder $query
+     */
+    public function scopeInOrder(Builder $query)
+    {
+        $query->oldest()->orderBy('id');
+    }
+
+    /**
+     * Filters query down to only moves on the given tile.
+     *
+     * @param Builder $query
+     * @param Tile $tile
+     */
+    public function scopeOnTile(Builder $query, Tile $tile)
+    {
+        $query->where('column', $tile->column())
+            ->where('row', $tile->row());
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function match()
+    {
+        return $this->belongsTo(Match::class);
     }
 }
