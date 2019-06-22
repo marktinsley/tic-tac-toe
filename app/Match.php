@@ -81,7 +81,7 @@ class Match extends Model
      */
     public function isPlayersTurn(User $player)
     {
-        $lastMove = $this->moves()->latest()->first();
+        $lastMove = $this->moves()->reverseOrder()->first();
 
         return !$lastMove || !$lastMove->wasMadeBy($player);
     }

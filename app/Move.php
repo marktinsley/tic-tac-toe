@@ -43,7 +43,17 @@ class Move extends Model
      */
     public function scopeInOrder(Builder $query)
     {
-        $query->oldest()->orderBy('id');
+        $query->orderBy('id');
+    }
+
+    /**
+     * Orders the moves in reverse of the sequence they were made.
+     *
+     * @param Builder $query
+     */
+    public function scopeReverseOrder(Builder $query)
+    {
+        $query->orderByDesc('id');
     }
 
     /**
