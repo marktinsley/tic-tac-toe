@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
 class Match extends Model
 {
@@ -15,6 +16,13 @@ class Match extends Model
      * @var array
      */
     protected $dates = ['ended_at'];
+
+    /**
+     * The attributes that aren't mass assignable.
+     *
+     * @var array
+     */
+    protected $guarded = [];
 
     /**
      * type_name accessor
@@ -68,6 +76,16 @@ class Match extends Model
     public function isInProgress()
     {
         return $this->ended_at === null;
+    }
+
+    /**
+     * Filters down to only matches that are currently in progress.
+     *
+     * @param Builder $query
+     */
+    public function scopeInProgress(Builder $query)
+    {
+        $query->whereNull('ended_at');
     }
 
     /**
