@@ -1,5 +1,6 @@
 <template>
     <div class="board">
+        <div class="winner h2" v-if="winnerFullName">Winner: {{ winnerFullName }}</div>
         <div class="board-row" v-for="row in [1,2,3]">
             <div class="tile" v-for="column in ['A','B','C']" @click="attemptMove(column, row)">
                 {{ getMark(column, row) }}
@@ -10,11 +11,12 @@
 
 <script>
     export default {
-        props: {matchId: Number, playerxId: Number, movesMade: Array},
+        props: {matchId: Number, playerxId: Number, winnerName: String, movesMade: Array},
 
         data() {
             return {
-                moves: this.movesMade
+                moves: this.movesMade,
+                winnerFullName: this.winnerName
             };
         },
 
@@ -23,6 +25,9 @@
                 .listen('MoveRecorded', event => this.moves.push(event.move))
                 .listen('MatchEnded', event => {
                     new Noty({type: 'success', text: 'The match has ended'}).show();
+                    if (event.winner) {
+                        this.winnerFullName = event.winner.name;
+                    }
                 });
         },
 

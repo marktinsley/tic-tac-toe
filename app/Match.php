@@ -100,22 +100,24 @@ class Match extends Model
      * Record a move on the board.
      *
      * @param Tile $tile
-     * @param User|null $player
+     * @param User $player
      *
      * @return Move
      */
     public function recordMove(Tile $tile, User $player)
     {
         $move = $this->moves()->create([
-            'player_id' => $player ? $player->id : null,
+            'player_id' => $player->id,
             'column' => $tile->column(),
             'row' => $tile->row(),
         ]);
 
         MoveRecorded::dispatch($move);
 
-        if ($this->isVsComputer() && !($player instanceof ComputerPlayer)) {
-            (new ComputerPlayer)->makeMove($this);
+        $this->closeIfDone();
+
+        if ($this->isVsComputer() && !$this->refresh()->hasEnded() && !($player instanceof ComputerPlayer)) {
+            ComputerPlayer::getInstance()->makeMove($this);
         }
 
         $this->closeIfDone();
@@ -137,11 +139,13 @@ class Match extends Model
         if ($winner) {
             $this->update(['winner_id' => $winner->id, 'ended_at' => now()]);
             MatchEnded::dispatch($this);
+            return;
         }
 
         if ($this->openTiles()->isEmpty()) {
             $this->update(['ended_at' => now()]);
             MatchEnded::dispatch($this);
+            return;
         }
     }
 

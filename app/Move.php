@@ -33,7 +33,7 @@ class Move extends Model
      */
     public function wasMadeByComputer()
     {
-        return $this->player_id === null;
+        return $this->player_id == ComputerPlayer::getInstance()->id;
     }
 
     /**
@@ -74,5 +74,13 @@ class Move extends Model
     public function match()
     {
         return $this->belongsTo(Match::class);
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function player()
+    {
+        return $this->belongsTo(User::class);
     }
 }

@@ -42,8 +42,43 @@ class MatchReferee
         return $this->match->recordMove($tile, $player);
     }
 
+    /**
+     * @return User
+     */
     public function lookForWinner()
     {
+        if ($this->match->refresh()->hasEnded()) {
+            return $this->match->winner;
+        }
+
+        $moves = $this->match->moves;
+        foreach (['A', 'B', 'C'] as $column) {
+            foreach ($moves->where('column', $column)->groupBy->player_id as $movesByPlayer) {
+                if ($movesByPlayer->count() === 3) {
+                    return $movesByPlayer->first()->player;
+                }
+            }
+        }
+
+        foreach (['1', '2', '3'] as $row) {
+            foreach ($moves->where('row', $row)->groupBy->player_id as $movesByPlayer) {
+                if ($movesByPlayer->count() === 3) {
+                    return $movesByPlayer->first()->player;
+                }
+            }
+        }
+
+        foreach ([['A1', 'B2', 'C3'], ['C1', 'B2', 'A3']] as $crossShorthands) {
+            $movesOnCross = collect($crossShorthands)->map(function ($tileShorthand) use ($moves) {
+                $tile = Tile::fromShorthand($tileShorthand);
+                return $moves->where('column', $tile->column())->where('row', (string)$tile->row())->first();
+            })->filter();
+
+            // Have a move on each of the three tiles, and all were done by the same player.
+            if ($movesOnCross->count() === 3 && $movesOnCross->groupBy->player_id->count() === 1) {
+                return $movesOnCross->first()->player;
+            }
+        }
     }
 
     /**

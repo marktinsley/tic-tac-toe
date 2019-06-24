@@ -5,19 +5,20 @@ namespace Tests\Unit;
 use App\ComputerPlayer;
 use App\Events\MoveRecorded;
 use App\Match;
-use App\MatchReferee;
 use App\Move;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
-use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ComputerPlayerTest extends TestCase
 {
+    use RefreshDatabase;
+
     /** @test */
     function it_makes_moves_for_the_computer()
     {
         // Arrange
+        ComputerPlayer::generate();
         Event::fake();
         $match = factory(Match::class)->create();
 
@@ -25,7 +26,7 @@ class ComputerPlayerTest extends TestCase
         $this->assertEquals(9, $match->openTiles()->count());
 
         // Execute
-        $move = (new ComputerPlayer)->makeMove($match);
+        $move = ComputerPlayer::getInstance()->makeMove($match);
 
         // Check
         $this->assertTrue($move instanceof Move);

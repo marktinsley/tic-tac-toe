@@ -4,12 +4,12 @@
     <div class="container">
         <h1 class="mb-3">Matches in Progress</h1>
 
-        <ul>
-            @foreach ($matches as $match)
-                <li>
-                    <a href="{{ route('matches.show', $match) }}">Match {{ $match->id }}</a>
-                </li>
-            @endforeach
-        </ul>
+        @forelse ($matches as $match)
+            <p>
+                <a href="{{ route('matches.show', $match) }}">Match {{ $match->id }}</a>
+            </p>
+        @empty
+            <em>No matches running at this time.</em>
+        @endforelse
     </div>
 @endsection
