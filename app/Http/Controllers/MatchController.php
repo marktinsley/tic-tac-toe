@@ -25,6 +25,8 @@ class MatchController extends Controller
      */
     public function create()
     {
+        $this->middleware('auth');
+
         return view('matches.create');
     }
 
@@ -36,6 +38,8 @@ class MatchController extends Controller
      */
     public function store(Request $request)
     {
+        $this->middleware('auth');
+
         $match = Match::create([
             'type_key' => Match::TYPE_VS_COMPUTER,
             'player1_id' => Auth::id(),

@@ -83,7 +83,8 @@ class Match extends Model
     {
         $lastMove = $this->moves()->reverseOrder()->first();
 
-        return !$lastMove || !$lastMove->wasMadeBy($player);
+        return (!$lastMove || !$lastMove->wasMadeBy($player)) &&
+            ($this->player1->is($player) || $this->player2 && $this->player2->is($player));
     }
 
     /**
