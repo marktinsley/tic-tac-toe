@@ -33,7 +33,7 @@ class MatchController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request $request
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
@@ -51,11 +51,13 @@ class MatchController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Match $match
+     * @param \App\Match $match
      * @return \Illuminate\Http\Response
      */
     public function show(Match $match)
     {
-        return view('matches.show', compact('match'));
+        return view('matches.show', compact('match') + [
+                'user' => Auth::user(),
+            ]);
     }
 }
