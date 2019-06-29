@@ -2,7 +2,9 @@
     <div class="board">
         <div class="winner h2" v-if="winnerFullName">Winner: {{ winnerFullName }}</div>
         <div class="board-row" v-for="row in [1,2,3]">
-            <div class="tile" v-for="column in ['A','B','C']" @click="attemptMove(column, row)">
+            <div :class="`tile${readOnly ? ' read-only' : ''}`" v-for="column in ['A','B','C']"
+                 @click="attemptMove(column, row)"
+            >
                 {{ getMark(column, row) }}
             </div>
         </div>
@@ -11,7 +13,13 @@
 
 <script>
     export default {
-        props: {matchId: Number, playerxId: Number, winnerName: String, movesMade: Array},
+        props: {
+            matchId: Number,
+            playerxId: Number,
+            winnerName: String,
+            movesMade: Array,
+            readOnly: Boolean
+        },
 
         data() {
             return {
@@ -20,7 +28,7 @@
             };
         },
 
-        mounted() {
+        created() {
             Echo.channel(`App.Match.${this.matchId}`)
                 .listen('MoveRecorded', event => this.moves.push(event.move))
                 .listen('MatchEnded', event => {
@@ -33,6 +41,10 @@
 
         methods: {
             attemptMove(column, row) {
+                if (this.readOnly) {
+                    return;
+                }
+
                 axios.post(`/api/matches/${this.matchId}/move`, {column, row})
                     .catch(error => {
                         let message = error.response.data.message;
@@ -81,6 +93,10 @@
         font-size: 3rem;
         text-align: center;
         cursor: pointer;
+    }
+
+    .board-row .tile.read-only {
+        cursor: default;
     }
 
     .board-row .tile:last-child {

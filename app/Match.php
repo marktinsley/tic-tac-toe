@@ -73,7 +73,19 @@ class Match extends Model
     }
 
     /**
-     * Is is the given player's turn?
+     * Is the given user a participant in this match?
+     *
+     * @param User $user
+     *
+     * @return bool
+     */
+    public function isParticipant(User $user)
+    {
+        return $this->player1->is($user) || $this->player2 && $this->player2->is($user);
+    }
+
+    /**
+     * Is it the given player's turn?
      *
      * @param User $player
      *
@@ -83,8 +95,7 @@ class Match extends Model
     {
         $lastMove = $this->moves()->reverseOrder()->first();
 
-        return (!$lastMove || !$lastMove->wasMadeBy($player)) &&
-            ($this->player1->is($player) || $this->player2 && $this->player2->is($player));
+        return $this->isParticipant($player) && (!$lastMove || !$lastMove->wasMadeBy($player));
     }
 
     /**

@@ -23,7 +23,7 @@ class Move extends Model
      */
     public function wasMadeBy(User $player)
     {
-        return !$this->wasMadeByComputer() && $player->id == $this->player_id;
+        return $player->id == $this->player_id;
     }
 
     /**
@@ -33,7 +33,7 @@ class Move extends Model
      */
     public function wasMadeByComputer()
     {
-        return $this->player_id == ComputerPlayer::getInstance()->id;
+        return $this->wasMadeBy(ComputerPlayer::getInstance());
     }
 
     /**

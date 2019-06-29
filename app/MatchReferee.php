@@ -2,7 +2,7 @@
 
 namespace App;
 
-use App\Events\MoveRecorded;
+use App\Rules\IsParticipant;
 use App\Rules\IsPlayersTurn;
 use App\Rules\IsTile;
 use App\Rules\MatchInProgress;
@@ -99,7 +99,7 @@ class MatchReferee
             ],
             [
                 'match_id' => [new MatchInProgress],
-                'player_id' => [new IsPlayersTurn($this->match)],
+                'player_id' => [new IsParticipant($this->match), new IsPlayersTurn($this->match)],
                 'tile' => [new IsTile, new TileIsAvailable($this->match)]
             ]
         );
